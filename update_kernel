@@ -13,7 +13,7 @@ wget https://raw.githubusercontent.com/pimlie/ubuntu-mainline-kernel.sh/master/u
 #Делаем скрипт исполняемым
 chmod +x ubuntu-mainline-kernel.sh
 
-#Перемещаем скрипт в /usr/local/bin для исполнения буз указания пути
+#Перемещаем скрипт в /usr/local/bin для быстрого исполнения
 sudo mv ubuntu-mainline-kernel.sh /usr/local/bin/
 
 #Проверка доступного ядра для установки
