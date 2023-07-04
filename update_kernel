@@ -1,0 +1,47 @@
+#Установвка нового ядра Ubuntu Server 20.0.4
+
+#Проверка и установка обновлений пакетов
+root@sega-otus:~# apt update && apt upgrade
+
+#Текущая версия ядра
+root@sega-otus:~# uname -r
+5.4.0-153-generic
+
+#Скачивание скрипта для установки ядра
+wget https://raw.githubusercontent.com/pimlie/ubuntu-mainline-kernel.sh/master/ubuntu-mainline-kernel.sh
+
+#Делаем скрипт исполняемым
+chmod +x ubuntu-mainline-kernel.sh
+
+#Перемещаем скрипт в /usr/local/bin для исполнения буз указания пути
+sudo mv ubuntu-mainline-kernel.sh /usr/local/bin/
+
+#Проверка доступного ядра для установки
+root@sega-otus:~# ubuntu-mainline-kernel.sh -c
+Finding latest version available on kernel.ubuntu.com: v6.4.0
+Finding latest installed version: none
+A newer kernel version (v6.4.0) is available
+
+#Как опция можем посмотреть все доступные для установки ядра
+ubuntu-mainline-kernel.sh -r
+
+#Установка ядра с указанием версии
+root@sega-otus:~# ubuntu-mainline-kernel.sh -i v6.4.0
+Downloading index from kernel.ubuntu.com
+Will download 6 files from kernel.ubuntu.com:
+Downloading amd64/linux-headers-6.4.0-060400-generic_6.4.0-060400.202306271339_amd64.deb: 100%
+Downloading amd64/linux-headers-6.4.0-060400_6.4.0-060400.202306271339_all.deb: 100%
+Downloading amd64/linux-image-unsigned-6.4.0-060400-generic_6.4.0-060400.202306271339_amd64.deb: 100%
+Downloading amd64/linux-modules-6.4.0-060400-generic_6.4.0-060400.202306271339_amd64.deb: 100%
+Downloading amd64/CHECKSUMS: 100%
+Downloading amd64/CHECKSUMS.gpg: 100%
+Importing kernel-ppa gpg key ok
+Signature of checksum file has been successfully verified
+Checksums of deb files have been successfully verified with sha256sum
+Installing 4 packages
+Cleaning up work folder
+(как опция установко последнего актуального ядра ubuntu-mainline-kernel.sh -i)
+
+#Перезагрузка и проверка версии ядра
+sega@sega-otus:~$ uname -r
+6.4.0-060400-generic
