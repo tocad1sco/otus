@@ -10,8 +10,6 @@ MACHINES = {
 
         :box_name => "ubuntu/focal64",
 
-      #  :ip_addr => '192.168.11.101',
-
         :disks => {
 
                 :sata1 => {
@@ -85,15 +83,6 @@ Vagrant.configure("2") do |config|
           box.vm.host_name = boxname.to_s
 
 
-
-          #box.vm.network "forwarded_port", guest: 3260, host: 3260+offset
-
-
-
-       #   box.vm.network "private_network", ip: boxconfig[:ip_addr]
-
-
-
           box.vm.provider :virtualbox do |vb|
 
                   vb.customize ["modifyvm", :id, "--memory", "1024"]
@@ -115,8 +104,6 @@ Vagrant.configure("2") do |config|
                   end
 
                   if needsController == true
-
-#                     vb.customize ["storagectl", :id, "--name", "SATA", "--add", "sata" ]
 
                      boxconfig[:disks].each do |dname, dconf|
 
