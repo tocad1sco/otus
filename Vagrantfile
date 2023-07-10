@@ -6,7 +6,7 @@
 
 MACHINES = {
 
-  :otus-sega => {
+  :otussega => {
 
         :box_name => "ubuntu/focal64",
 
@@ -124,64 +124,51 @@ Vagrant.configure("2") do |config|
             #  yum install -y mdadm smartmontools hdparm gdisk
 
         #  SHELL
-box.vm.provision "shell", inline: <<-SHELL
+config.vm.provision "shell", inline: <<-SHELL
    # Install mdadm for RAID configuration
-    sudo apt-get update
-    sudo apt-get install -y mdadm
+    #sudo apt-get update
+    #sudo apt-get install -y mdadm
 
     # Create the RAID array
-    sudo mdadm --create /dev/md0 --level=5 --raid-devices=3 /dev/sdb /dev/sdc /dev/sdd
+    sudo mdadm --zero-superblock --force /dev/sdc /dev/sdd
+    sudo mdadm --create --verbose --metadata=0.90 /dev/md123 -l 1 -n 2 /dev/sdc /dev/sdd
 
     # Format the RAID array with GPT partition table
-    sudo parted -s /dev/md0 mklabel gpt
+    sudo parted -s /dev/md123 mklabel gpt
 
     # Create 5 partitions
-    sudo parted -s /dev/md0 mkpart primary ext4 0% 20%
-    sudo parted -s /dev/md0 mkpart primary ext4 20% 40%
-    sudo parted -s /dev/md0 mkpart primary ext4 40% 60%
-    sudo parted -s /dev/md0 mkpart primary ext4 60% 80%
-    sudo parted -s /dev/md0 mkpart primary ext4 80% 100%
-
-    # Format partitions with ext4 file system
-    sudo mkfs.ext4 /dev/md0p1
-    sudo mkfs.ext4 /dev/md0p2
-    sudo mkfs.ext4 /dev/md0p3
-    sudo mkfs.ext4 /dev/md0p4
-    sudo mkfs.ext4 /dev/md0p5
-
-    # Create mount points
-    sudo mkdir -p /raid/part1
-    sudo mkdir -p /raid/part2
-    sudo mkdir -p /raid/part3
-    sudo mkdir -p /raid/part4
-    sudo mkdir -p /raid/part5
+    sudo parted -s /dev/md123 mkpart primary ext4 0% 20%
+    sudo parted -s /dev/md123 mkpart primary ext4 20% 40%
+    sudo parted -s /dev/md123 mkpart primary ext4 40% 60%
+    sudo parted -s /dev/md123 mkpart primary ext4 60% 80%
+    sudo parted -s /dev/md123 mkpart primary ext4 80% 100%
 
     # Add RAID array to mdadm.conf
-    echo "DEVICE /dev/sdb /dev/sdc /dev/sdd" | sudo tee -a /etc/mdadm/mdadm.conf
-    sudo mdadm --detail --scan | grep ARRAY | sudo tee -a /etc/mdadm/mdadm.conf
+    sudo rm /etc/mdadm/mdadm.conf
+    touch ~/mdadm.conf
+    sudo echo "DEVICE partitions" > ~/mdadm.conf
+    sudo mdadm --detail --scan | awk '/ARRAY/{print}'  >> ~/mdadm.conf
+    sudo mv ~/mdadm.conf /etc/mdadm/mdadm.conf
+
+    # Format partitions with ext4 file system
+    for i in $(seq 1 5); do mkfs.ext4 /dev/md123p$i; done
+
+    # Create mount points
+    mkdir -p /raid/part{1,2,3,4,5}
 
     # Update initramfs
     sudo update-initramfs -u
 
     # Mount the partitions
-    sudo mount /dev/md0p1 /raid/part1
-    sudo mount /dev/md0p2 /raid/part2
-    sudo mount /dev/md0p3 /raid/part3
-    sudo mount /dev/md0p4 /raid/part4
-    sudo mount /dev/md0p5 /raid/part5
+    for i in $(seq 1 5); do sudo mount /dev/md123p$i /raid/part$i; done
 
-    # Update /etc/fstab to mount partitions on boot
-    echo "/dev/md0p1   /raid/part1   ext4   defaults   0   0" | sudo tee -a /etc/fstab
-    echo "/dev/md0p2   /raid/part2   ext4   defaults   0   0" | sudo tee -a /etc/fstab
-    echo "/dev/md0p3   /raid/part3   ext4   defaults   0   0" | sudo tee -a /etc/fstab
-    echo "/dev/md0p4   /raid/part4   ext4   defaults   0   0" | sudo tee -a /etc/fstab
-    echo "/dev/md0p5   /raid/part5   ext4   defaults   0   0" | sudo tee -a /etc/fstab
-  SHELL
-end
-
-
-      end
+    echo "/dev/md123p1   /raid/part1   ext4   defaults   0   0" | sudo tee -a /etc/fstab
+    echo "/dev/md123p2   /raid/part2   ext4   defaults   0   0" | sudo tee -a /etc/fstab
+    echo "/dev/md123p3   /raid/part3   ext4   defaults   0   0" | sudo tee -a /etc/fstab
+    echo "/dev/md123p4   /raid/part4   ext4   defaults   0   0" | sudo tee -a /etc/fstab
+    echo "/dev/md123p5   /raid/part5   ext4   defaults   0   0" | sudo tee -a /etc/fstab
+     SHELL
+   end
 
   end
-
 end
