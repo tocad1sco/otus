@@ -6,7 +6,7 @@
 
 MACHINES = {
 
-  :otuslinux => {
+  :otus-sega => {
 
         :box_name => "ubuntu/focal64",
 
